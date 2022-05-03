@@ -3,7 +3,7 @@ import { Flex, Image, Text } from '@chakra-ui/react';
 const NavBar : React.FC = () => {
   return (
     <Flex
-      bg="purple.400"
+      bg="purple.500"
       color="white"
       align="center"
       px={2}

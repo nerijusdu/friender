@@ -1,10 +1,9 @@
-import type { FlexProps } from '@chakra-ui/react';
 import { Stack, Flex, Divider } from '@chakra-ui/react';
 import { NavLink } from '@remix-run/react';
 
 const SideBar : React.FC = () => {
   return (
-    <Stack fontSize="xl">
+    <Stack fontSize="xl" height="90vh">
       <SideBarItem title="Posts" link="posts" />
       <Divider borderColor="purple.700"/>
       <SideBarItem title="Friends" link="friends" />

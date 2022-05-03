@@ -17,8 +17,8 @@ export const action: ActionFunction = async ({ request }) => {
   const userId = await requireUserId(request);
 
   const formData = await request.formData();
-  const title = formData.get('title');
-  const body = formData.get('body');
+  const title = formData.get('title') || undefined;
+  const body = formData.get('body') || undefined;
 
   if (typeof title !== 'string' || title.length === 0) {
     return json<ActionData>(

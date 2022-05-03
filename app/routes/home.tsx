@@ -16,10 +16,10 @@ export default function HomePage() {
       <NavBar />
       <Flex>
         <SideBar />
-        <Flex direction="column" m={2} grow={1}>
+        <Flex direction="column" m={4} grow={1}>
           <Outlet />
         </Flex>
-        <Flex px={4}>
+        <Flex px={4} height="90vh">
           <Heading size="lg" fontWeight="semibold">Forums</Heading>
         </Flex>
       </Flex>
