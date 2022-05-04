@@ -42,6 +42,7 @@ export function getPosts() {
           id: true,
           email: true,
           name: true,
+          description: true,
         }
       }
     },
