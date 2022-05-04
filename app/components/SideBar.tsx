@@ -4,11 +4,11 @@ import { NavLink } from '@remix-run/react';
 const SideBar : React.FC = () => {
   return (
     <Stack fontSize="xl" height="90vh">
-      <SideBarItem title="Posts" link="posts" />
+      <SideBarItem title="Posts" link="/home/posts" />
       <Divider borderColor="purple.700"/>
-      <SideBarItem title="Friends" link="friends" />
+      <SideBarItem title="Friends" link="/home/friends" />
       <Divider borderColor="purple.700"/>
-      <SideBarItem title="Ranks" link="ranks" />
+      <SideBarItem title="Ranks" link="/home/ranks" />
       <Divider borderColor="purple.700"/>
     </Stack>
   );

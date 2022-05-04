@@ -22,6 +22,8 @@ interface ActionData {
   errors: {
     email?: string;
     password?: string;
+    name?: string;
+    description?: string;
   };
 }
 
@@ -29,6 +31,8 @@ export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
   const email = formData.get('email');
   const password = formData.get('password');
+  const name = formData.get('name') as string;
+  const description = formData.get('description') as string;
   const redirectTo = safeRedirect(formData.get('redirectTo'), '/');
 
   if (!validateEmail(email)) {
@@ -41,6 +45,13 @@ export const action: ActionFunction = async ({ request }) => {
   if (typeof password !== 'string') {
     return json<ActionData>(
       { errors: { password: 'Password is required' } },
+      { status: 400 }
+    );
+  }
+
+  if (typeof name !== 'string' || name.length === 0) {
+    return json<ActionData>(
+      { errors: { name: 'Name is required' } },
       { status: 400 }
     );
   }
@@ -60,7 +71,7 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const user = await createUser(email, password);
+  const user = await createUser({email, password, name, description});
 
   return createUserSession({
     request,
@@ -144,6 +155,56 @@ export default function Join() {
               {actionData?.errors?.password && (
                 <div className="pt-1 text-red-700" id="password-error">
                   {actionData.errors.password}
+                </div>
+              )}
+            </div>
+          </div>
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Full name
+            </label>
+            <div className="mt-1">
+              <input
+                id="name"
+                required
+                autoFocus={true}
+                name="name"
+                type="text"
+                aria-invalid={actionData?.errors?.name ? true : undefined}
+                aria-describedby="name-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {actionData?.errors?.name && (
+                <div className="pt-1 text-red-700" id="name-error">
+                  {actionData.errors.name}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Tell us something about yourself
+            </label>
+            <div className="mt-1">
+              <textarea
+                id="description"
+                required
+                autoFocus={true}
+                name="description"
+                aria-invalid={actionData?.errors?.description ? true : undefined}
+                aria-describedby="description-error"
+                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
+              />
+              {actionData?.errors?.description && (
+                <div className="pt-1 text-red-700" id="description-error">
+                  {actionData.errors.description}
                 </div>
               )}
             </div>

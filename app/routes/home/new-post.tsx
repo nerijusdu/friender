@@ -46,7 +46,7 @@ export const action: ActionFunction = async ({ request }) => {
 
 const NewPost : React.FC = () => {
   const actionData = useActionData() as ActionData;
-  console.log(actionData);
+
   return (
     <Card as="form" method="POST" direction="column" gap={4}>
       <FormControl isInvalid={!!actionData?.errors?.title}>

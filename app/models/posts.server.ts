@@ -1,10 +1,13 @@
 import type { User, Post } from '@prisma/client';
 
 import { prisma } from '~/db.server';
+import type { UserMin } from './user.server';
 
 export type { Post } from '@prisma/client';
 
-export type PostMin = Pick<Post, 'id' | 'title' | 'body' | 'createdAt' | 'updatedAt'>;
+export type PostMin = Pick<Post, 'id' | 'title' | 'body' | 'createdAt' | 'updatedAt'> & {
+  user: UserMin;
+}
 
 export function createPost({
   body,
@@ -26,10 +29,22 @@ export function createPost({
   });
 }
 
-export function getPosts({ userId }: { userId: User['id'] }) {
+export function getPosts() {
   return prisma.post.findMany({
-    where: { userId },
-    select: { id: true, title: true, body: true, createdAt: true, updatedAt: true },
+    select: {
+      id: true,
+      title: true,
+      body: true,
+      createdAt: true,
+      updatedAt: true,
+      user: {
+        select: {
+          id: true,
+          email: true,
+          name: true,
+        }
+      }
+    },
     orderBy: { updatedAt: 'desc' },
   });
 }
