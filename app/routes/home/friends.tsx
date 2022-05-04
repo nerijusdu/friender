@@ -1,17 +1,15 @@
-import { Button, Flex, Heading, Image, Link } from '@chakra-ui/react';
+import { Button, Flex, Heading } from '@chakra-ui/react';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { NavLink, useLoaderData } from '@remix-run/react';
+import { useLoaderData } from '@remix-run/react';
 import Card from '~/components/Card';
+import UserCard from '~/components/UserCard';
+import type { UserMin } from '~/models/user.server';
 import { getFriends } from '~/models/user.server';
 import { requireUserId } from '~/session.server';
 
 type LoaderData = {
-  friends: {
-    id: string;
-    name: string;
-    email: string;
-  }[];
+  friends: UserMin[];
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
@@ -30,37 +28,28 @@ const Friends : React.FC = () => {
         <Card>No friends yet</Card>
       )}
       {friends.map(friend => (
-        <Card key={friend.id} justify="space-between">
-          <Flex align="center">
-            <Image src="/profile.jpg" rounded="full" w="50px" />
-            <Link
-              as={NavLink}
-              to={`/users/${friend.id}`}
-              size="md"
-              fontWeight="normal"
-              ml={4}
+        <UserCard
+          key={friend.id}
+          user={friend}
+          actionButtons={(
+            <Flex
+              as="form"
+              alignSelf="center"
+              action="/users/friend"
+              method="post"
             >
-              {friend.name || friend.email}
-            </Link>
-          </Flex>
-
-          <Flex
-            as="form"
-            alignSelf="center"
-            action="/users/friend"
-            method="post"
-          >
-            <input type="hidden" name="_method" value="Delete" />
-            <input type="hidden" value={friend.id} name="userId" />
-            <Button
-              size="sm"
-              colorScheme="purple"
-              type="submit"
-            >
+              <input type="hidden" name="_method" value="Delete" />
+              <input type="hidden" value={friend.id} name="userId" />
+              <Button
+                size="sm"
+                colorScheme="purple"
+                type="submit"
+              >
                 Unfriend
-            </Button>
-          </Flex>
-        </Card>
+              </Button>
+            </Flex>
+          )}
+        />
       ))}
     </>
   );

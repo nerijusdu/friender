@@ -5,13 +5,14 @@ import { prisma } from '~/db.server';
 
 export type { User } from '@prisma/client';
 
-export type UserMin = Pick<User, 'id' | 'email' | 'name' | 'description'>;
+export type UserMin = Pick<User, 'id' | 'email' | 'name' | 'description' | 'score'>;
 export type UserProfileDto = UserMin & { friends: UserMin[] };
 const toMinUser = (user: User): UserMin => ({
   id: user.id,
   email: user.email,
   name: user.name,
   description: user.description,
+  score: user.score,
 });
 
 export async function getUserById(id: User['id']) {
@@ -84,6 +85,18 @@ export async function getFriends(id: User['id']) {
   return [...user?.friends ?? [], ...user?.friendsRelation ?? []].map(toMinUser);
 }
 
+export async function getUsers() {
+  return prisma.user.findMany({
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      description: true,
+      score: true,
+    }
+  });
+}
+
 export async function addFriend(
   userId: User['id'],
   friendId: User['id']
@@ -133,4 +146,63 @@ export async function getUserProfile(id: User['id']) {
     ...toMinUser(user),
     friends: friends.map(toMinUser),
   };
+}
+
+export async function rankUser(user1Id: User['id'], user2Id: User['id']) {
+  const user1 = await getUserById(user1Id);
+  const user2 = await getUserById(user2Id);
+
+  if (!user1 || !user2) {
+    return null;
+  }
+
+  const existingRank = await prisma.rankRequest.findFirst({
+    where: {
+      OR: [
+        { user1Id, user2Id },
+        { user1Id: user2Id, user2Id: user1Id },
+      ]
+    }
+  });
+
+  if (!existingRank) {
+    return prisma.rankRequest.create({
+      data: {
+        user1Id,
+        user2Id,
+        accepted: false,
+      },
+    });
+  }
+
+  if (existingRank.accepted) {
+    return existingRank;
+  }
+
+  await prisma.user.update({
+    where: { id: user1Id },
+    data: { score: user1.score + 1 },
+  });
+  await prisma.user.update({
+    where: { id: user2Id },
+    data: { score: user2.score + 1 },
+  });
+
+  return await prisma.rankRequest.update({
+    where: { id: existingRank.id },
+    data: { accepted: true },
+  });
+}
+
+export async function isRankedByUser(user1Id: User['id'], user2Id: User['id']) {
+  const existingRank = await prisma.rankRequest.findFirst({
+    where: {
+      OR: [
+        { user1Id, user2Id },
+        { user1Id: user2Id, user2Id: user1Id },
+      ]
+    }
+  });
+
+  return !!existingRank?.accepted;
 }
