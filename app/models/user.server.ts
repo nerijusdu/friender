@@ -118,9 +118,10 @@ export async function getFriends(id: User['id']) {
 
 export type UsersQueryParams = {
   search?: string | null;
+  tag?: string | null;
 }
 
-export async function getUsers({ search }: UsersQueryParams = {}) {
+export async function getUsers({ search, tag }: UsersQueryParams = {}) {
   const users = await prisma.user.findMany({
     select: {
       id: true,
@@ -138,6 +139,9 @@ export async function getUsers({ search }: UsersQueryParams = {}) {
     where: {
       email: search ? { contains: search } : undefined,
       name: search ? { contains: search } : undefined,
+      tags: {
+        some: tag ? { tag } : undefined,
+      }
     }
   });
 
@@ -259,4 +263,13 @@ export async function isRankedByUser(currentUserId: User['id'], user2Id: User['i
 
   return currentUserId === existingRank.user1Id && existingRank.accepted1 ||
     currentUserId === existingRank.user2Id && existingRank.accepted2;
+}
+
+export async function getAllTags() {
+  const tags = await prisma.userTag.findMany({
+    select: { tag: true }, distinct: ['tag'],
+    orderBy: { tag: 'asc' },
+  });
+
+  return tags.map(x => x.tag);
 }

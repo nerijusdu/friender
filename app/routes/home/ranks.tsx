@@ -1,30 +1,38 @@
 import { SearchIcon } from '@chakra-ui/icons';
-import { Badge, Flex, Heading, HStack, IconButton, Input, InputGroup, InputRightElement } from '@chakra-ui/react';
+import { Badge, Flex, Heading, HStack, IconButton, Input, InputGroup, InputRightElement, Select } from '@chakra-ui/react';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useLoaderData, useNavigate } from '@remix-run/react';
-import { useState } from 'react';
+import { useLoaderData, useLocation, useNavigate } from '@remix-run/react';
+import { useEffect, useState } from 'react';
 import UserCard from '~/components/UserCard';
 import type { UserMin} from '~/models/user.server';
+import { getAllTags} from '~/models/user.server';
 import { getUsers} from '~/models/user.server';
 import { requireUserId } from '~/session.server';
 
 type LoaderData = {
   users: UserMin[];
+  tags: string[];
 }
 
 export const loader: LoaderFunction = async ({ request }) => {
   await requireUserId(request);
   const url = new URL(request.url);
   const search = url.searchParams.get('search');
-  const users = await getUsers({ search });
-  return json<LoaderData>({ users });
+  const filter = url.searchParams.get('filter');
+  const users = await getUsers({ search, tag: filter });
+  const tags = await getAllTags();
+  return json<LoaderData>({ users, tags });
 };
 
 const Ranks : React.FC = () => {
+  const { search: urlQuery } = useLocation();
+  const params = new URLSearchParams(urlQuery);
   const navigate = useNavigate();
-  const [search, setSearch] = useState('');
-  const { users } = useLoaderData() as LoaderData;
+  const [searchText, setSearchText] = useState(params.get('search') || '');
+  const [search, setSearch] = useState(params.get('search') || '');
+  const [filter, setFilter] = useState(params.get('filter') || '');
+  const { users, tags } = useLoaderData() as LoaderData;
   const getBorderColor = (index: number) => {
     switch (index) {
       case 0: return 'gold';
@@ -34,22 +42,45 @@ const Ranks : React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    const query = new URLSearchParams();
+    if (search) {
+      query.append('search', search);
+    }
+    if (filter) {
+      query.append('filter', filter);
+    }
+    navigate(`/home/ranks?${query.toString()}`);
+  }, [search, filter]);
+
   return (
     <>
       <Flex px={2} justify="space-between" gap={4}>
         <Heading size="lg" fontWeight="semibold">Ranks</Heading>
+
+        <Select
+          maxW="200px"
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+        >
+          <option value="">Filter</option>
+          {tags.map(tag => (
+            <option key={tag} value={tag}>{tag}</option>
+          ))}
+        </Select>
+
         <Flex>
           <InputGroup>
             <Input
               placeholder="Search"
               maxW="300px"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
             />
             <InputRightElement>
               <IconButton
                 icon={<SearchIcon />}
-                onClick={() => navigate('/home/ranks?search=' + search)}
+                onClick={() => setSearch(searchText)}
                 aria-label="Search"
                 colorScheme="purple"
                 size="sm"
