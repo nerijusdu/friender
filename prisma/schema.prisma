@@ -57,8 +57,9 @@ model Post {
 }
 
 model RankRequest {
-  id       String  @id @default(cuid())
-  user1Id  String
-  user2Id  String
-  accepted Boolean @default(false)
+  id        String  @id @default(cuid())
+  user1Id   String
+  user2Id   String
+  accepted1 Boolean @default(false)
+  accepted2 Boolean @default(false)
 }

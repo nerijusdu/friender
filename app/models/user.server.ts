@@ -170,12 +170,13 @@ export async function rankUser(user1Id: User['id'], user2Id: User['id']) {
       data: {
         user1Id,
         user2Id,
-        accepted: false,
+        accepted1: true,
+        accepted2: false,
       },
     });
   }
 
-  if (existingRank.accepted) {
+  if (existingRank.accepted1 && existingRank.accepted2) {
     return existingRank;
   }
 
@@ -190,19 +191,24 @@ export async function rankUser(user1Id: User['id'], user2Id: User['id']) {
 
   return await prisma.rankRequest.update({
     where: { id: existingRank.id },
-    data: { accepted: true },
+    data: { accepted1: true, accepted2: true },
   });
 }
 
-export async function isRankedByUser(user1Id: User['id'], user2Id: User['id']) {
+export async function isRankedByUser(currentUserId: User['id'], user2Id: User['id']) {
   const existingRank = await prisma.rankRequest.findFirst({
     where: {
       OR: [
-        { user1Id, user2Id },
-        { user1Id: user2Id, user2Id: user1Id },
+        { user1Id: currentUserId, user2Id },
+        { user1Id: user2Id, user2Id: currentUserId },
       ]
     }
   });
 
-  return !!existingRank?.accepted;
+  if (!existingRank) {
+    return false;
+  }
+
+  return currentUserId === existingRank.user1Id && existingRank.accepted1 ||
+    currentUserId === existingRank.user2Id && existingRank.accepted2;
 }

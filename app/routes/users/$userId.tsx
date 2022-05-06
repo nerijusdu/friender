@@ -25,7 +25,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
     throw new Response('Not Found', { status: 404 });
   }
 
-  const isRanked = await isRankedByUser(user.id, currentUserId);
+  const isRanked = await isRankedByUser(currentUserId, user.id);
 
   return json<LoaderData>({ user, isRanked });
 };
