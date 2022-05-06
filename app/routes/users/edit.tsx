@@ -58,7 +58,7 @@ const EditUser : React.FC = () => {
   return (
     <Layout>
       <Card direction="column">
-        <Heading size="lg" fontWeight="semibold">Updates</Heading>
+        <Heading size="lg" fontWeight="semibold">Update profile</Heading>
         <Stack as={Form} method="post">
           <FormInput
             name="_"

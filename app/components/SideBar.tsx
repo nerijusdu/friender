@@ -3,13 +3,12 @@ import { NavLink } from '@remix-run/react';
 
 const SideBar : React.FC = () => {
   return (
-    <Stack fontSize="xl" height="90vh">
+    <Stack fontSize="xl" height="90vh" pl={2}>
       <SideBarItem title="Posts" link="/home/posts" />
       <Divider borderColor="purple.700"/>
       <SideBarItem title="Friends" link="/home/friends" />
       <Divider borderColor="purple.700"/>
       <SideBarItem title="Ranks" link="/home/ranks" />
-      <Divider borderColor="purple.700"/>
     </Stack>
   );
 };
