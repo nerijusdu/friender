@@ -85,7 +85,11 @@ export async function getFriends(id: User['id']) {
   return [...user?.friends ?? [], ...user?.friendsRelation ?? []].map(toMinUser);
 }
 
-export async function getUsers() {
+export type UsersQueryParams = {
+  search?: string | null;
+}
+
+export async function getUsers({ search }: UsersQueryParams = {}) {
   return prisma.user.findMany({
     select: {
       id: true,
@@ -93,6 +97,13 @@ export async function getUsers() {
       name: true,
       description: true,
       score: true,
+    },
+    orderBy: {
+      score: 'desc',
+    },
+    where: {
+      email: search ? { contains: search } : undefined,
+      name: search ? { contains: search } : undefined,
     }
   });
 }
