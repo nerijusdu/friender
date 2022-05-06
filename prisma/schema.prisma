@@ -23,6 +23,8 @@ model User {
 
   friends         User[] @relation("friends")
   friendsRelation User[] @relation("friends")
+
+  tags UserTag[]
 }
 
 model Password {
@@ -62,4 +64,12 @@ model RankRequest {
   user2Id   String
   accepted1 Boolean @default(false)
   accepted2 Boolean @default(false)
+}
+
+model UserTag {
+  id  String @id @default(cuid())
+  tag String
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }

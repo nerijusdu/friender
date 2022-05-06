@@ -1,5 +1,5 @@
 import { SearchIcon } from '@chakra-ui/icons';
-import { Flex, Heading, IconButton, Input, InputGroup, InputRightElement } from '@chakra-ui/react';
+import { Badge, Flex, Heading, HStack, IconButton, Input, InputGroup, InputRightElement } from '@chakra-ui/react';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useLoaderData, useNavigate } from '@remix-run/react';
@@ -67,6 +67,13 @@ const Ranks : React.FC = () => {
           user={user}
           imageBorderColor={getBorderColor(i)}
         >
+          <HStack spacing={1} wrap="wrap">
+            {user.tags?.slice(0, 5).map(tag => (
+              <Badge key={tag} colorScheme="purple">
+                {tag}
+              </Badge>
+            ))}
+          </HStack>
           <Flex px={2}>
             Score: {user.score}
           </Flex>

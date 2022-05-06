@@ -1,7 +1,7 @@
-import { Button, Divider, Flex, Heading, HStack, Image, Text } from '@chakra-ui/react';
+import { Badge, Button, Divider, Flex, Heading, HStack, Image, Text } from '@chakra-ui/react';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { NavLink, useLoaderData } from '@remix-run/react';
 import invariant from 'tiny-invariant';
 import Card from '~/components/Card';
 import Layout from '~/components/Layout';
@@ -85,11 +85,34 @@ const UserProfile : React.FC = () => {
                 )}
               </HStack>
             )}
+            {currentUser.id === user.id && (
+              <Button
+                as={NavLink}
+                to="/users/edit"
+                colorScheme="purple"
+                variant="outline"
+                size="sm"
+              >
+                Edit
+              </Button>
+            )}
           </Flex>
 
           <Divider my={2} />
 
           {user.description?.split('\n').map((x, i) => <Text key={i}>{x}</Text>)}
+
+          <Divider my={2} />
+
+          {!!user.tags?.length && (
+            <HStack spacing={2} wrap="wrap">
+              {user.tags.map(tag => (
+                <Badge key={tag} colorScheme="purple" p={1}>
+                  {tag}
+                </Badge>
+              ))}
+            </HStack>
+          )}
         </Flex>
       </Card>
     </Layout>

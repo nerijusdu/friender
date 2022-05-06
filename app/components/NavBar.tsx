@@ -16,7 +16,7 @@ const NavBar : React.FC = () => {
       {user ? (
         <Flex align="center">
           <Image src="/profile.jpg" w="50px" rounded="full" p={2} />
-          <Link as={NavLink} to={`/users/${user.id}`}>Profile</Link>
+          <Link as={NavLink} to={`/users/${user.id}`}>{user.name || user.email}</Link>
         </Flex>
       ) : <div></div>}
       <form action={user ? '/logout' : '/login'} method="post">

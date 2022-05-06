@@ -5,14 +5,17 @@ import { prisma } from '~/db.server';
 
 export type { User } from '@prisma/client';
 
-export type UserMin = Pick<User, 'id' | 'email' | 'name' | 'description' | 'score'>;
+export type UserMin = Pick<User, 'id' | 'email' | 'name' | 'description' | 'score'> & {
+  tags?: string[];
+}
 export type UserProfileDto = UserMin & { friends: UserMin[] };
-const toMinUser = (user: User): UserMin => ({
+const toMinUser = (user: User, tags: string[] = []): UserMin => ({
   id: user.id,
   email: user.email,
   name: user.name,
   description: user.description,
   score: user.score,
+  tags: tags,
 });
 
 export async function getUserById(id: User['id']) {
@@ -38,6 +41,34 @@ export async function createUser({ email, password, name, description }: Partial
       },
     },
   });
+}
+
+export async function updateUser({
+  id,
+  name,
+  description,
+  tags,
+}: { id: User['id']; name: User['name']; description: User['description']; tags: string[] }) {
+  const userTags = await prisma.userTag.findMany({ where: { userId: id } });
+  const newTags = tags.filter((tag) => !userTags.some((userTag) => userTag.tag === tag));
+  const deletedTags = userTags.filter((userTag) => !tags.includes(userTag.tag)).map(x => x.id);
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id },
+      data: {
+        name,
+        description,
+      },
+    }),
+    prisma.userTag.deleteMany({ where: { userId: id, id: { in: deletedTags } } }),
+    ...newTags.map((tag) => prisma.userTag.create({
+      data: {
+        userId: id,
+        tag,
+      },
+    })),
+  ]);
 }
 
 export async function deleteUserByEmail(email: User['email']) {
@@ -82,7 +113,7 @@ export async function getFriends(id: User['id']) {
     },
   });
 
-  return [...user?.friends ?? [], ...user?.friendsRelation ?? []].map(toMinUser);
+  return [...user?.friends ?? [], ...user?.friendsRelation ?? []].map(x => toMinUser(x));
 }
 
 export type UsersQueryParams = {
@@ -90,13 +121,16 @@ export type UsersQueryParams = {
 }
 
 export async function getUsers({ search }: UsersQueryParams = {}) {
-  return prisma.user.findMany({
+  const users = await prisma.user.findMany({
     select: {
       id: true,
       email: true,
       name: true,
       description: true,
       score: true,
+      createdAt: true,
+      updatedAt: true,
+      tags: true,
     },
     orderBy: {
       score: 'desc',
@@ -106,6 +140,8 @@ export async function getUsers({ search }: UsersQueryParams = {}) {
       name: search ? { contains: search } : undefined,
     }
   });
+
+  return users.map(x => toMinUser(x, x.tags.map(x => x.tag)));
 }
 
 export async function addFriend(
@@ -145,6 +181,7 @@ export async function getUserProfile(id: User['id']) {
     include: {
       friends: true,
       friendsRelation: true,
+      tags: true,
     },
   });
   if (!user) {
@@ -154,8 +191,8 @@ export async function getUserProfile(id: User['id']) {
   const friends = [...user.friends, ...user.friendsRelation];
 
   return {
-    ...toMinUser(user),
-    friends: friends.map(toMinUser),
+    ...toMinUser(user, user.tags.map(x => x.tag)),
+    friends: friends.map(x => toMinUser(x)),
   };
 }
 
