@@ -1,6 +1,7 @@
-import { Flex, Image, Link } from '@chakra-ui/react';
+import { Flex, Link } from '@chakra-ui/react';
 import { NavLink } from '@remix-run/react';
 import { useOptionalUser } from '~/utils';
+import UserImage from './UserImage';
 
 const NavBar : React.FC = () => {
   const user = useOptionalUser();
@@ -15,7 +16,7 @@ const NavBar : React.FC = () => {
     >
       {user ? (
         <Flex align="center">
-          <Image src="/profile.jpg" w="50px" rounded="full" p={2} />
+          <UserImage p={2} />
           <Link as={NavLink} to={`/users/${user.id}`}>{user.name || user.email}</Link>
         </Flex>
       ) : <div></div>}

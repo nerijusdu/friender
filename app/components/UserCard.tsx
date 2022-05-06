@@ -1,8 +1,9 @@
 import type { ImageProps } from '@chakra-ui/react';
-import { Link, Flex, Image } from '@chakra-ui/react';
+import { Link, Flex } from '@chakra-ui/react';
 import { NavLink } from '@remix-run/react';
 import type { UserMin } from '~/models/user.server';
 import Card from './Card';
+import UserImage from './UserImage';
 
 export type UserCardProps = {
   user: UserMin;
@@ -14,10 +15,7 @@ const UserCard : React.FC<UserCardProps> = ({ user, actionButtons, children, ima
   return (
     <Card justify="space-between" align="center">
       <Flex align="center">
-        <Image
-          src="/profile.jpg"
-          rounded="full"
-          w="50px"
+        <UserImage
           border={imageBorderColor ? '3px solid' : undefined}
           borderColor={imageBorderColor}
         />

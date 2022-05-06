@@ -1,10 +1,12 @@
-import { Badge, Button, Divider, Flex, Heading, HStack, Image, Text } from '@chakra-ui/react';
+import { Badge, Button, Divider, Flex, Heading, HStack, Text } from '@chakra-ui/react';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { NavLink, useLoaderData } from '@remix-run/react';
 import invariant from 'tiny-invariant';
+import ActionButton from '~/components/ActionButton';
 import Card from '~/components/Card';
 import Layout from '~/components/Layout';
+import UserImage from '~/components/UserImage';
 import type { UserProfileDto } from '~/models/user.server';
 import { isRankedByUser } from '~/models/user.server';
 import { getUserProfile } from '~/models/user.server';
@@ -38,7 +40,7 @@ const UserProfile : React.FC = () => {
   return (
     <Layout>
       <Card p={4}>
-        <Image src="/profile.jpg" rounded="full" w="100px" h="100px" />
+        <UserImage size="lg" />
         <Flex ml={4} direction="column" grow={1}>
           <Flex justify="space-between" grow={1}>
             <Flex direction="column">
@@ -48,40 +50,24 @@ const UserProfile : React.FC = () => {
 
             {currentUser.id !== user.id && (
               <HStack>
-                <Flex
-                  as="form"
-                  alignSelf="flex-start"
+                <ActionButton
                   action="/users/friend"
-                  method="post"
+                  size="sm"
+                  variant={isFriends ? 'outline' : 'solid'}
+                  label={isFriends ? 'Unfriend' : 'Add Friend'}
+                  method={isFriends ? 'delete' : 'post'}
                 >
-                  <input type="hidden" name="_method" value={isFriends ? 'delete' : 'post'} />
                   <input type="hidden" value={user.id} name="userId" />
-                  <Button
-                    size="sm"
-                    colorScheme="purple"
-                    variant={isFriends ? 'outline' : 'primary'}
-                    type="submit"
-                  >
-                    {isFriends ? 'Unfriend' : 'Add Friend'}
-                  </Button>
-                </Flex>
+                </ActionButton>
 
                 {!isRanked && (
-                  <Flex
-                    as="form"
-                    alignSelf="flex-start"
+                  <ActionButton
                     action="/users/rank"
-                    method="post"
+                    size="sm"
+                    label="+ Rank"
                   >
                     <input type="hidden" value={user.id} name="userId" />
-                    <Button
-                      size="sm"
-                      colorScheme="purple"
-                      type="submit"
-                    >
-                      + Rank
-                    </Button>
-                  </Flex>
+                  </ActionButton>
                 )}
               </HStack>
             )}
