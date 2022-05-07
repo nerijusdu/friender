@@ -1,7 +1,8 @@
 import type { ButtonProps} from '@chakra-ui/react';
 import { Button, Flex } from '@chakra-ui/react';
 
-export type ActionButtonProps = ButtonProps &{
+export type ActionButtonProps = ButtonProps & {
+  icon?: React.ReactNode;
   label?: string;
   method?: 'post' | 'put' | 'patch' | 'delete';
   action: string;

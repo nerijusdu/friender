@@ -50,3 +50,12 @@ export function getPosts() {
     orderBy: { updatedAt: 'desc' },
   });
 }
+
+export async function deletePost(id: Post['id'], userId: User['id']) {
+  const count = await prisma.post.count({ where: { id, userId } });
+  if (count === 0) {
+    throw new Error('Post not found');
+  }
+
+  return prisma.post.delete({ where: { id } });
+}
