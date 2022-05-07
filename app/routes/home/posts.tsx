@@ -1,8 +1,9 @@
-import { DeleteIcon } from '@chakra-ui/icons';
-import { Heading, Stack, Flex, Button, Divider, Link, HStack, IconButton } from '@chakra-ui/react';
+import { ChatIcon, DeleteIcon } from '@chakra-ui/icons';
+import { Heading, Stack, Flex, Button, Divider, Link, HStack, IconButton, Input, InputGroup, InputRightElement, Text } from '@chakra-ui/react';
 import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
-import { NavLink, useLoaderData } from '@remix-run/react';
+import { Form, NavLink, useLoaderData, useSubmit, useTransition } from '@remix-run/react';
+import { useEffect, useRef, useState } from 'react';
 import ActionButton from '~/components/ActionButton';
 import Card from '~/components/Card';
 import type { PostMin } from '~/models/posts.server';
@@ -20,7 +21,6 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 const Feed : React.FC = () => {
   const { posts } = useLoaderData() as LoaderData;
-  const currentUser = useOptionalUser();
 
   return (
     <>
@@ -36,49 +36,131 @@ const Feed : React.FC = () => {
         </Button>
       </Flex>
       <Stack>
-        {posts.map(post => (
-          <Card key={post.id} direction="column">
-            <Flex justify="space-between" align="center">
-              <Heading size="md" fontWeight="normal">{post.title}</Heading>
-              <HStack>
-                <Link
-                  as={NavLink}
-                  to={`/users/${post.user.id}`}
-                  colorScheme="purple"
-                  fontSize="sm"
-                  textAlign="right"
-                >
-                  {post.user.name || post.user.email}
-                </Link>
+        {posts.map(post => <Post key={post.id} post={post} />)}
+      </Stack>
+    </>
+  );
+};
 
-                {currentUser?.id === post.user.id && (
+export type PostProps = {
+  post: PostMin;
+}
+
+const Post : React.FC<PostProps> = ({ post }) => {
+  const formRef = useRef(null);
+  const [commentText, setCommentText] = useState('');
+  const currentUser = useOptionalUser();
+  const submit = useSubmit();
+  const transition = useTransition();
+  const isSubmitting = transition.state === 'submitting';
+  const hasComments = !!post.comments?.length;
+
+  useEffect(() => {
+    if (!isSubmitting) {
+      setCommentText('');
+    }
+  }, [isSubmitting]);
+
+  return (
+    <Card key={post.id} direction="column" px={0}>
+      <Flex justify="space-between" align="center" px={2}>
+        <Heading size="md" fontWeight="normal">{post.title}</Heading>
+        <HStack>
+          <Link
+            as={NavLink}
+            to={`/users/${post.user.id}`}
+            colorScheme="purple"
+            fontSize="sm"
+            textAlign="right"
+          >
+            {post.user.name || post.user.email}
+          </Link>
+
+          {currentUser?.id === post.user.id && (
+            <ActionButton
+              as={IconButton}
+              icon={<DeleteIcon />}
+              action="/home/post"
+              method='delete'
+              size="sm"
+              variant="ghost"
+              colorScheme="red"
+              rounded="full"
+              aria-label="Delete post"
+            >
+              <input type="hidden" value={post.id} name="postId" />
+            </ActionButton>
+          )}
+        </HStack>
+      </Flex>
+
+      <Divider my={2} borderColor="gray.400" />
+
+      <Flex px={2}>{post.body}</Flex>
+
+      <Divider my={2} borderColor="gray.400"/>
+
+      {hasComments && (
+        <>
+          {/* <Text size="sm" fontStyle="italic" alignSelf="center" px={2}>Comments</Text>
+          <Divider mt={2} /> */}
+          <Stack pl={2}>
+            {post.comments!.map(comment => (
+              <Flex key={comment.id} justify="space-between">
+                <Flex py={1}>
+                  <Link as={NavLink} to={`/users/${comment.user.id}`} fontWeight="bold">
+                    {comment.user.name}
+                  </Link>
+                  <Text ml={2}>{comment.body}</Text>
+                </Flex>
+                {currentUser?.id === comment.user.id && (
                   <ActionButton
                     as={IconButton}
                     icon={<DeleteIcon />}
-                    action="/home/post"
+                    action="/home/comment"
                     method='delete'
                     size="sm"
                     variant="ghost"
                     colorScheme="red"
                     rounded="full"
-                    aria-label="Delete post"
+                    aria-label="Delete comment"
                   >
-                    <input type="hidden" value={post.id} name="postId" />
+                    <input type="hidden" value={comment.id} name="commentId" />
                   </ActionButton>
                 )}
-              </HStack>
-            </Flex>
+              </Flex>
+            ))}
+          </Stack>
+          <Divider my={2} borderColor="gray.400" />
+        </>
+      )}
 
-            <Divider my={2} />
-
-            <Flex>{post.body}</Flex>
-
-            <Divider my={2} />
-          </Card>
-        ))}
-      </Stack>
-    </>
+      <InputGroup as={Form} action="/home/comment" method="post" ref={formRef} px={2}>
+        <input type="hidden" value={post.id} name="postId" />
+        <Input
+          placeholder="Comment"
+          name="comment"
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          isDisabled={isSubmitting}
+        />
+        <InputRightElement mr={2}>
+          <IconButton
+            icon={<ChatIcon />}
+            onClick={() => submit(formRef?.current, { replace: true })}
+            aria-label="Search"
+            colorScheme="purple"
+            size="sm"
+            variant="ghost"
+            rounded="full"
+            m={2}
+            isDisabled={isSubmitting}
+          />
+        </InputRightElement>
+      </InputGroup>
+    </Card>
   );
 };
+
 
 export default Feed;

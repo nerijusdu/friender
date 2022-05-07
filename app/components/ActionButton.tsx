@@ -1,5 +1,6 @@
 import type { ButtonProps} from '@chakra-ui/react';
 import { Button, Flex } from '@chakra-ui/react';
+import { Form, useTransition } from '@remix-run/react';
 
 export type ActionButtonProps = ButtonProps & {
   icon?: React.ReactNode;
@@ -15,9 +16,11 @@ const ActionButton : React.FC<ActionButtonProps> = ({
   action,
   ...buttonProps
 }) => {
+  const transition = useTransition();
+
   return (
     <Flex
-      as="form"
+      as={Form}
       alignSelf="center"
       action={action}
       method="post"
@@ -26,6 +29,7 @@ const ActionButton : React.FC<ActionButtonProps> = ({
       {children}
       <Button
         colorScheme="purple"
+        isDisabled={transition.state === 'submitting'}
         {...buttonProps}
         type="submit"
       >
