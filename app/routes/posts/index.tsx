@@ -6,7 +6,8 @@ import { Form, NavLink, useLoaderData, useSubmit, useTransition } from '@remix-r
 import { useEffect, useRef, useState } from 'react';
 import ActionButton from '~/components/ActionButton';
 import Card from '~/components/Card';
-import type { PostMin } from '~/models/posts.server';
+import Layout from '~/components/Layout';
+import type { CommentMin, PostMin } from '~/models/posts.server';
 import { getPosts } from '~/models/posts.server';
 import { useOptionalUser } from '~/utils';
 
@@ -23,14 +24,14 @@ const Feed : React.FC = () => {
   const { posts } = useLoaderData() as LoaderData;
 
   return (
-    <>
+    <Layout>
       <Flex px={2} justify="space-between">
         <Heading size="lg" fontWeight="semibold">Updates</Heading>
         <Button
           as={NavLink}
           colorScheme="purple"
           size="sm"
-          to="/home/new-post"
+          to="/posts/new-post"
         >
           Create a post
         </Button>
@@ -38,7 +39,7 @@ const Feed : React.FC = () => {
       <Stack>
         {posts.map(post => <Post key={post.id} post={post} />)}
       </Stack>
-    </>
+    </Layout>
   );
 };
 
@@ -52,7 +53,8 @@ const Post : React.FC<PostProps> = ({ post }) => {
   const currentUser = useOptionalUser();
   const submit = useSubmit();
   const transition = useTransition();
-  const isSubmitting = transition.state === 'submitting';
+  const isSubmitting = transition.state === 'submitting' &&
+    transition.submission?.formData?.get('postId') === post.id;
   const hasComments = !!post.comments?.length;
 
   useEffect(() => {
@@ -80,11 +82,11 @@ const Post : React.FC<PostProps> = ({ post }) => {
             <ActionButton
               as={IconButton}
               icon={<DeleteIcon />}
-              action="/home/post"
+              action="/posts/post"
               method='delete'
               size="sm"
               variant="ghost"
-              colorScheme="red"
+              colorScheme="blackAlpha"
               rounded="full"
               aria-label="Delete post"
             >
@@ -102,40 +104,16 @@ const Post : React.FC<PostProps> = ({ post }) => {
 
       {hasComments && (
         <>
-          {/* <Text size="sm" fontStyle="italic" alignSelf="center" px={2}>Comments</Text>
-          <Divider mt={2} /> */}
           <Stack pl={2}>
             {post.comments!.map(comment => (
-              <Flex key={comment.id} justify="space-between">
-                <Flex py={1}>
-                  <Link as={NavLink} to={`/users/${comment.user.id}`} fontWeight="bold">
-                    {comment.user.name}
-                  </Link>
-                  <Text ml={2}>{comment.body}</Text>
-                </Flex>
-                {currentUser?.id === comment.user.id && (
-                  <ActionButton
-                    as={IconButton}
-                    icon={<DeleteIcon />}
-                    action="/home/comment"
-                    method='delete'
-                    size="sm"
-                    variant="ghost"
-                    colorScheme="red"
-                    rounded="full"
-                    aria-label="Delete comment"
-                  >
-                    <input type="hidden" value={comment.id} name="commentId" />
-                  </ActionButton>
-                )}
-              </Flex>
+              <Comment key={comment.id} comment={comment} currentUserId={currentUser?.id} />
             ))}
           </Stack>
           <Divider my={2} borderColor="gray.400" />
         </>
       )}
 
-      <InputGroup as={Form} action="/home/comment" method="post" ref={formRef} px={2}>
+      <InputGroup as={Form} action="/posts/comment" method="post" ref={formRef} px={2}>
         <input type="hidden" value={post.id} name="postId" />
         <Input
           placeholder="Comment"
@@ -154,7 +132,7 @@ const Post : React.FC<PostProps> = ({ post }) => {
             variant="ghost"
             rounded="full"
             m={2}
-            isDisabled={isSubmitting}
+            isLoading={isSubmitting}
           />
         </InputRightElement>
       </InputGroup>
@@ -162,5 +140,39 @@ const Post : React.FC<PostProps> = ({ post }) => {
   );
 };
 
+export type CommentProps = {
+  comment: CommentMin;
+  currentUserId?: string;
+}
+
+const Comment : React.FC<CommentProps> = ({ comment, currentUserId }) => {
+  return (
+    <Flex key={comment.id} justify="space-between">
+      <Flex py={1}>
+        <Link as={NavLink} to={`/users/${comment.user.id}`} fontWeight="bold">
+          {comment.user.name}
+        </Link>
+        <Text ml={2}>{comment.body}</Text>
+      </Flex>
+
+      {currentUserId === comment.user.id && (
+        <ActionButton
+          as={IconButton}
+          icon={<DeleteIcon />}
+          action="/posts/comment"
+          method='delete'
+          size="sm"
+          variant="ghost"
+          colorScheme="blackAlpha"
+          rounded="full"
+          aria-label="Delete comment"
+          mr={1}
+        >
+          <input type="hidden" value={comment.id} name="commentId" />
+        </ActionButton>
+      )}
+    </Flex>
+  );
+};
 
 export default Feed;

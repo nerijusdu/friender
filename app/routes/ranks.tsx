@@ -4,6 +4,7 @@ import type { LoaderFunction } from '@remix-run/node';
 import { json } from '@remix-run/node';
 import { useLoaderData, useLocation, useNavigate } from '@remix-run/react';
 import { useEffect, useState } from 'react';
+import Layout from '~/components/Layout';
 import UserCard from '~/components/UserCard';
 import type { UserMin} from '~/models/user.server';
 import { getAllTags} from '~/models/user.server';
@@ -50,11 +51,11 @@ const Ranks : React.FC = () => {
     if (filter) {
       query.append('filter', filter);
     }
-    navigate(`/home/ranks?${query.toString()}`);
+    navigate(`/ranks?${query.toString()}`);
   }, [search, filter]);
 
   return (
-    <>
+    <Layout>
       <Flex px={2} justify="space-between" gap={4}>
         <Heading size="lg" fontWeight="semibold">Ranks</Heading>
 
@@ -110,7 +111,7 @@ const Ranks : React.FC = () => {
           </Flex>
         </UserCard>
       ))}
-    </>
+    </Layout>
   );
 };
 

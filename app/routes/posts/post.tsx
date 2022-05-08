@@ -18,5 +18,5 @@ export const action: ActionFunction = async ({ request }) => {
     await deletePost(postId, userId);
   }
 
-  return redirect('/home/posts');
+  return redirect('/posts');
 };

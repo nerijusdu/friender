@@ -19,5 +19,5 @@ export const action: ActionFunction = async ({ request }) => {
     await addComment(postId, userId, comment);
   }
 
-  return redirect('/home/posts');
+  return redirect('/posts');
 };

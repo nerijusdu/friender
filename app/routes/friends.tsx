@@ -4,6 +4,7 @@ import { json } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import ActionButton from '~/components/ActionButton';
 import Card from '~/components/Card';
+import Layout from '~/components/Layout';
 import UserCard from '~/components/UserCard';
 import type { UserMin } from '~/models/user.server';
 import { getFriends } from '~/models/user.server';
@@ -23,7 +24,7 @@ const Friends : React.FC = () => {
   const { friends } = useLoaderData() as LoaderData;
 
   return (
-    <>
+    <Layout>
       <Heading px={2} size="lg" fontWeight="semibold">Friends</Heading>
       {!friends.length && (
         <Card>No friends yet</Card>
@@ -45,7 +46,7 @@ const Friends : React.FC = () => {
           )}
         />
       ))}
-    </>
+    </Layout>
   );
 };
 
